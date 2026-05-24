@@ -1,0 +1,415 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
+
+// ══════════════════════════════════════════════════════════════
+//  Design Tokens
+// ══════════════════════════════════════════════════════════════
+:root {
+  --bg-base:       #080b14;
+  --bg-card:       rgba(255, 255, 255, 0.04);
+  --border:        rgba(255, 255, 255, 0.10);
+  --border-focus:  rgba(99, 179, 237, 0.60);
+
+  --accent-1:      #63b3ed;   // electric blue
+  --accent-2:      #b794f4;   // soft violet
+  --accent-3:      #68d391;   // mint
+
+  --text-primary:  #f0f4ff;
+  --text-muted:    rgba(240, 244, 255, 0.45);
+  --text-label:    rgba(240, 244, 255, 0.70);
+
+  --input-bg:      rgba(255, 255, 255, 0.05);
+  --input-hover:   rgba(255, 255, 255, 0.08);
+
+  --radius-card:   24px;
+  --radius-input:  12px;
+  --radius-btn:    12px;
+
+  --transition:    0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  Reset / Base
+// ══════════════════════════════════════════════════════════════
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  Shared Keyframes
+// ══════════════════════════════════════════════════════════════
+@keyframes drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(36px, 28px) scale(1.09); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(32px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  Shared Aurora Wrapper
+//  Applied to both <main> (login) and .register-container
+// ══════════════════════════════════════════════════════════════
+%aurora-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-base);
+
+  &::before {
+    content: '';
+    position: absolute;
+    width: 580px;
+    height: 580px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--accent-1), transparent 70%);
+    filter: blur(90px);
+    opacity: 0.17;
+    top: -120px;
+    left: -120px;
+    animation: drift 14s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--accent-2), transparent 70%);
+    filter: blur(85px);
+    opacity: 0.17;
+    bottom: -100px;
+    right: -100px;
+    animation: drift 11s ease-in-out infinite alternate-reverse;
+    pointer-events: none;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  Shared Glass Card
+// ══════════════════════════════════════════════════════════════
+%glass-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+
+  background: var(--bg-card);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 2.8rem 2.4rem 2.4rem;
+  overflow: hidden;
+  animation: slideUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  // shimmer border ring
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      rgba(255,255,255,0.18) 0%,
+      rgba(255,255,255,0.02) 50%,
+      rgba(99, 179, 237, 0.18) 100%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  Shared Input Styles
+// ══════════════════════════════════════════════════════════════
+%shared-input {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 0.82rem 1rem;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-input);
+  color: var(--text-primary);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  outline: none;
+  transition:
+    border-color var(--transition),
+    background   var(--transition),
+    box-shadow   var(--transition);
+
+  &::placeholder { color: var(--text-muted); }
+
+  &:hover {
+    background: var(--input-hover);
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+
+  &:focus {
+    background: rgba(99, 179, 237, 0.06);
+    border-color: var(--border-focus);
+    box-shadow:
+      0 0 0 3px rgba(99, 179, 237, 0.12),
+      0 0 20px rgba(99, 179, 237, 0.08);
+  }
+
+  &:-webkit-autofill,
+  &:-webkit-autofill:hover,
+  &:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #0e1422 inset;
+    -webkit-text-fill-color: var(--text-primary);
+    caret-color: var(--text-primary);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  Shared Button
+// ══════════════════════════════════════════════════════════════
+%shared-btn {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 0.9rem 1.5rem;
+  border: none;
+  border-radius: var(--radius-btn);
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #fff;
+  overflow: hidden;
+  transition: transform var(--transition), box-shadow var(--transition);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.22) 50%,
+      transparent 70%
+    );
+    transform: translateX(-100%);
+    transition: transform 0.55s ease;
+  }
+
+  &:hover::after { transform: translateX(100%); }
+  &:active { transform: translateY(0); box-shadow: none; }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  LOGIN PAGE
+// ══════════════════════════════════════════════════════════════
+main {
+  @extend %aurora-wrapper;
+
+  // mint blob
+  .aurora-blob {
+    position: absolute;
+    width: 350px;
+    height: 350px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--accent-3), transparent 70%);
+    filter: blur(80px);
+    opacity: 0.12;
+    bottom: 10%;
+    left: 15%;
+    animation: drift 16s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+}
+
+.formContainer {
+  @extend %glass-card;
+  display: flex;
+  flex-direction: column;
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.25rem;
+    position: relative;
+    z-index: 1;
+    background: linear-gradient(120deg, var(--text-primary) 30%, var(--accent-1) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  form {
+    margin-top: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+
+  .inputGrp {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+
+    &:nth-child(1) { animation: fadeIn 0.45s 0.10s ease both; }
+    &:nth-child(2) { animation: fadeIn 0.45s 0.20s ease both; }
+
+    label {
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-label);
+      position: relative;
+      z-index: 1;
+    }
+
+    input { @extend %shared-input; }
+  }
+
+  .btn.primary {
+    @extend %shared-btn;
+    margin-top: 0.4rem;
+    background: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);
+    animation: fadeIn 0.45s 0.35s ease both;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 6px 24px rgba(99, 179, 237, 0.35),
+        0 2px 8px  rgba(183, 148, 244, 0.25);
+    }
+  }
+
+  .footer-link {
+    margin-top: 1.4rem;
+    text-align: center;
+    font-size: 0.83rem;
+    color: var(--text-muted);
+    position: relative;
+    z-index: 1;
+
+    a {
+      color: var(--accent-1);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color var(--transition);
+      &:hover { color: var(--accent-2); }
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  REGISTER PAGE
+// ══════════════════════════════════════════════════════════════
+.register-container {
+  @extend %aurora-wrapper;
+
+  // flip blob positions for visual variety
+  &::before { top: auto; bottom: -130px; left: auto; right: -80px; }
+  &::after  { bottom: auto; top: -100px; right: auto; left: -80px; }
+}
+
+.register-form {
+  @extend %glass-card;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+
+  // mint blob on card
+  &::after {
+    content: '';
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--accent-3), transparent 70%);
+    filter: blur(75px);
+    opacity: 0.10;
+    bottom: -60px;
+    right: -60px;
+    pointer-events: none;
+    z-index: 0;
+    // override shimmer ring's ::after only on register-form
+    -webkit-mask: none;
+    mask: none;
+    padding: 0;
+    background-clip: unset;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.4rem;
+    position: relative;
+    z-index: 1;
+    // violet gradient — subtle sibling distinction from login
+    background: linear-gradient(120deg, var(--text-primary) 30%, var(--accent-2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: fadeIn 0.45s 0.05s ease both;
+  }
+
+  input {
+    @extend %shared-input;
+    &:nth-of-type(1) { animation: fadeIn 0.45s 0.12s ease both; }
+    &:nth-of-type(2) { animation: fadeIn 0.45s 0.20s ease both; }
+    &:nth-of-type(3) { animation: fadeIn 0.45s 0.28s ease both; }
+  }
+
+  button[type="submit"] {
+    @extend %shared-btn;
+    margin-top: 0.3rem;
+    // violet → blue (inverted from login)
+    background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%);
+    animation: fadeIn 0.45s 0.36s ease both;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 6px 24px rgba(183, 148, 244, 0.35),
+        0 2px 8px  rgba(99, 179, 237, 0.25);
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  Responsive
+// ══════════════════════════════════════════════════════════════
+@media (max-width: 480px) {
+  .formContainer,
+  .register-form {
+    padding: 2rem 1.4rem 1.8rem;
+    border-radius: 18px;
+  }
+
+  .formContainer h1,
+  .register-form h1 { font-size: 1.7rem; }
+}
