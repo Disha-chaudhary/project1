@@ -27,5 +27,9 @@ authRouter.get('/logout',authController.logoutUSerController)
  * @route GET/api/auth/get-me
  * @description get user details * @access private
  */
-authRouter.get('/get-me',authMiddleware.authUSer,authController.getMeController)
+authRouter.get(
+  "/get-me",
+  authMiddleware.authUser,
+  authController.getMeController
+);
 module.exports = authRouter;
