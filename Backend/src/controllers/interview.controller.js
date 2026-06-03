@@ -10,9 +10,20 @@ async function createInterviewReport(req, res) {
       });
     }
 
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized. User ID not found in token.",
+      });
+    }
+
     const { selfDescription, jobDescription } = req.body;
 
-    const pdfData = await (new pdfParse.PDFParse(Uint8Array.from(req.file.buffer))).getText();
+    const pdfData = await new pdfParse.PDFParse(
+      Uint8Array.from(req.file.buffer)
+    ).getText();
+
     const resumeText = pdfData.text;
 
     const aiResponse = await generateInterviewReport({
@@ -22,11 +33,15 @@ async function createInterviewReport(req, res) {
     });
 
     const interviewReport = await InterviewReportModel.create({
-      user: req.user._id,
+      user: userId,
       resume: resumeText,
       selfDescription,
       jobDescription,
-      ...aiResponse,
+      matchScore: aiResponse.matchScore || 0,
+technicalQuestions: aiResponse.technicalQuestions || [],
+behavioralQuestions: aiResponse.behavioralQuestions || [],
+skillGaps: aiResponse.skillGaps || [],
+preparationPlan: aiResponse.preparationPlan || [],
     });
 
     res.status(201).json({

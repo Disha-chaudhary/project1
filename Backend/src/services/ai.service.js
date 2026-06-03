@@ -1,11 +1,86 @@
 const { GoogleGenAI } = require("@google/genai");
-const { z } = require("zod");
-const { zodToJsonSchema } = require("zod-to-json-schema");
 require("dotenv").config();
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GOOGLE_GENAI_API_KEY,
 });
+
+function cleanJsonText(text) {
+  return text
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .trim();
+}
+
+function toQuestionObjects(arr = []) {
+  if (!Array.isArray(arr)) return [];
+
+  const result = [];
+
+  for (let i = 0; i < arr.length; i++) {
+    const item = arr[i];
+
+    if (typeof item === "object" && item !== null) {
+      result.push({
+        question: item.question || "Question not provided",
+        answer: item.answer || "Answer not provided",
+        intention: item.intention || "Intention not provided",
+      });
+    } else if (typeof item === "string") {
+      result.push({
+        question: item.replace(/^Question:\s*/i, ""),
+        answer: "Answer not provided",
+        intention: "Intention not provided",
+      });
+    }
+  }
+
+  return result;
+}
+
+function toSkillGapObjects(arr = []) {
+  if (!Array.isArray(arr)) return [];
+
+  return arr.map((item) => {
+    if (typeof item === "object" && item !== null) {
+      return {
+        skill: item.skill || "Skill gap",
+        description: item.description || "Description not provided",
+        severity: ["Low", "Medium", "High"].includes(item.severity)
+          ? item.severity
+          : "Medium",
+      };
+    }
+
+    return {
+      skill: "Skill gap",
+      description: String(item),
+      severity: "Medium",
+    };
+  });
+}
+
+function toPreparationPlanObjects(arr = []) {
+  if (!Array.isArray(arr)) return [];
+
+  return arr.map((item, index) => {
+    if (typeof item === "object" && item !== null) {
+      return {
+        day: item.day || index + 1,
+        focus: item.focus || "Interview preparation",
+        resources: item.resources || "Online documentation and practice",
+        task: item.task || "Practice and revise",
+      };
+    }
+
+    return {
+      day: index + 1,
+      focus: "Interview preparation",
+      resources: "Online documentation and practice",
+      task: String(item),
+    };
+  });
+}
 
 async function invokeGeminiAi() {
   const response = await ai.models.generateContent({
@@ -15,43 +90,6 @@ async function invokeGeminiAi() {
 
   console.log(response.text);
 }
-
-const interviewReportSchema = z.object({
-  matchScore: z.number().min(0).max(100).describe("Resume match score"),
-
-  technicalQuestions: z.array(
-    z.object({
-      question: z.string().describe("Technical interview question"),
-      answer: z.string().describe("Answer to the technical question"),
-      intention: z.string().describe("Intention behind the technical question"),
-    })
-  ),
-
-  behavioralQuestions: z.array(
-    z.object({
-      question: z.string().describe("Behavioral interview question"),
-      answer: z.string().describe("Answer to the behavioral question"),
-      intention: z.string().describe("Intention behind the behavioral question"),
-    })
-  ),
-
-  skillGaps: z.array(
-    z.object({
-      skill: z.string().describe("Skill gap"),
-      description: z.string().describe("Description of the skill gap"),
-      severity: z.enum(["Low", "Medium", "High"]).describe("Severity of the skill gap"),
-    })
-  ),
-
-  preparationPlan: z.array(
-    z.object({
-      day: z.number().describe("Day of the preparation plan"),
-      focus: z.string().describe("Focus area for the preparation plan"),
-      resources: z.string().describe("Resources for the preparation plan"),
-      task: z.string().describe("Task for the preparation plan"),
-    })
-  ),
-});
 
 async function generateInterviewReport({
   resume,
@@ -70,14 +108,55 @@ ${selfDescription}
 Job Description:
 ${jobDescription}
 
-Generate:
-1. Technical interview questions with answers and intentions.
-2. Behavioral interview questions with answers and intentions.
-3. Skill gaps.
-4. Preparation plan.
-5. Match score from 0 to 100.
+Return ONLY valid JSON.
 
-Return only valid JSON.
+Use EXACTLY this structure and EXACTLY these camelCase keys:
+
+{
+  "matchScore": 85,
+  "technicalQuestions": [
+    {
+      "question": "technical question here",
+      "answer": "answer here",
+      "intention": "why interviewer asks this"
+    }
+  ],
+  "behavioralQuestions": [
+    {
+      "question": "behavioral question here",
+      "answer": "answer here",
+      "intention": "why interviewer asks this"
+    }
+  ],
+  "skillGaps": [
+    {
+      "skill": "skill name",
+      "description": "description here",
+      "severity": "Medium"
+    }
+  ],
+  "preparationPlan": [
+    {
+      "day": 1,
+      "focus": "focus area",
+      "resources": "resources here",
+      "task": "task here"
+    }
+  ]
+}
+
+Rules:
+- Do not use snake_case keys.
+- Do not return arrays of strings.
+- technicalQuestions must be array of objects.
+- behavioralQuestions must be array of objects.
+- skillGaps must be array of objects.
+- preparationPlan must be array of objects.
+- severity must be only "Low", "Medium", or "High".
+- Give 5 technical questions.
+- Give 5 behavioral questions.
+- Give 3 skill gaps.
+- Give 7 days preparation plan.
 `;
 
   const response = await ai.models.generateContent({
@@ -85,11 +164,40 @@ Return only valid JSON.
     contents: prompt,
     config: {
       responseMimeType: "application/json",
-      responseSchema: zodToJsonSchema(interviewReportSchema),
     },
   });
 
-  return JSON.parse(response.text);
+  console.log("Gemini raw response:", response.text);
+
+  const parsedResponse = JSON.parse(cleanJsonText(response.text));
+
+  return {
+    matchScore:
+      parsedResponse.matchScore ||
+      parsedResponse.match_score ||
+      parsedResponse.score ||
+      0,
+
+    technicalQuestions: toQuestionObjects(
+      parsedResponse.technicalQuestions ||
+        parsedResponse.technical_interview_questions ||
+        []
+    ),
+
+    behavioralQuestions: toQuestionObjects(
+      parsedResponse.behavioralQuestions ||
+        parsedResponse.behavioral_interview_questions ||
+        []
+    ),
+
+    skillGaps: toSkillGapObjects(
+      parsedResponse.skillGaps || parsedResponse.skill_gaps || []
+    ),
+
+    preparationPlan: toPreparationPlanObjects(
+      parsedResponse.preparationPlan || parsedResponse.preparation_plan || []
+    ),
+  };
 }
 
 module.exports = {

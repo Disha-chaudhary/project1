@@ -43,36 +43,53 @@ async function registerUser(req, res) {
 }
 
 async function loginUser(req, res) {
+    console.log("BODY:", req.body);
+
     const { email, password } = req.body;
+    console.log("EMAIL:", email);
 
     const user = await userModel.findOne({ email });
+    console.log("USER:", user);
 
     if (!user) {
-        return res.status(400).json({ message: 'Invalid email or password' });
+        return res.status(400).json({
+            message: "Invalid email or password"
+        });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
+    console.log("PASSWORD VALID:", isPasswordValid);
 
     if (!isPasswordValid) {
-        return res.status(400).json({ message: 'Invalid email or password' });
+        return res.status(400).json({
+            message: "Invalid email or password"
+        });
     }
+
+    console.log("Creating token...");
 
     const token = jwt.sign(
         { userId: user._id, name: user.name },
         process.env.JWT_SECRET,
-        { expiresIn: '1d' }
+        { expiresIn: "1d" }
     );
 
-    res.cookie("token", token);
+    console.log("Token created");
 
-    res.status(200).json({
-        message: 'User logged in successfully',
-        user: {
-            id: user._id,
-            name: user.name,
-            email: user.email
-        }
-    });
+   res.cookie("token", token, {
+    httpOnly: true,
+});
+
+console.log("Sending response...");
+
+return res.status(200).json({
+    message: "User logged in successfully",
+    user: {
+        id: user._id,
+        name: user.name,
+        email: user.email
+    }
+});
 }
 
 async function logoutUSerController(req,res){
