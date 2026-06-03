@@ -27,10 +27,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
-console.log("✅ app.js loaded");
+console.log(" app.js loaded");
 
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: true,
   credentials: true,
 }));
 
