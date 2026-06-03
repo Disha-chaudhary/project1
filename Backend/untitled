@@ -1,0 +1,53 @@
+{
+  "technical_interview_questions": [
+    "Explain the concept of JavaScript closures. Provide an example where closures are particularly useful in a MERN stack application.",
+    "**Answer:** A closure is a function that remembers its outer lexical environment even after the outer function has finished executing. This means it can access variables from its parent scope. In a MERN app, closures are useful for creating private variables, memoization, or currying functions, e.g., in a React component's event handler or a Node.js middleware to pass configuration.",
+    "**Intention:** To assess deep understanding of core JavaScript concepts beyond basic syntax and its practical application in web development.",
+    "Describe the difference between state and props in React. When would you use a `useState` hook versus `useReducer`?",
+    "**Answer:** `State` is data managed by a component that can change over time, typically through user interaction or network requests. `Props` (short for properties) are read-only data passed from parent to child components to configure them. `useState` is used for simple state management (e.g., a boolean toggle, a text input value). `useReducer` is preferred for more complex state logic involving multiple sub-values or when the next state depends on the previous one, similar to Redux.",
+    "**Intention:** To evaluate understanding of fundamental React concepts and appropriate hook usage for state management.",
+    "How does Express.js middleware work? Give an example of a common use case for middleware in a Node.js API.",
+    "**Answer:** Express.js middleware functions are functions that have access to the request object (req), the response object (res), and the next middleware function in the application's request-response cycle. They can execute code, make changes to the request and response objects, end the request-response cycle, or call the next middleware. Common use cases include logging requests, authentication (e.g., JWT verification), body parsing, and error handling.",
+    "**Intention:** To gauge understanding of how Express handles requests and how to extend its functionality, crucial for building robust APIs.",
+    "What are the advantages of using a NoSQL database like MongoDB over a traditional SQL database for a web application? When might you still prefer SQL?",
+    "**Answer:** MongoDB (NoSQL) offers flexibility with schema-less data, horizontal scalability (sharding), and is well-suited for handling large volumes of unstructured or semi-structured data, making it good for rapidly evolving applications. SQL databases provide strong data consistency (ACID properties), complex joins, and mature tooling, making them ideal when data integrity and complex relationships are paramount, like in financial systems.",
+    "**Intention:** To understand architectural decision-making and awareness of different database paradigms and their trade-offs.",
+    "Explain idempotency in the context of REST APIs. Why is it important, and which HTTP methods are considered idempotent?",
+    "**Answer:** An operation is idempotent if executing it multiple times produces the same result as executing it once. In REST APIs, this means a client can safely retry a request without causing unintended side effects. It's important for reliability and fault tolerance in distributed systems. HTTP methods considered idempotent are GET, PUT, DELETE, and HEAD. POST is generally not idempotent.",
+    "**Intention:** To assess knowledge of RESTful principles and how to design reliable APIs."
+  ],
+  "behavioral_interview_questions": [
+    "Tell me about a challenging technical problem you encountered during one of your projects (MediTrack or Vidyarya) and how you approached solving it. What did you learn?",
+    "**Answer:** (Disha should prepare a specific example. For instance: 'During MediTrack, we faced an issue with real-time data synchronization between multiple clients using WebSockets. I researched various strategies, tried implementing a robust error handling mechanism for disconnected clients, and eventually refactored the server-side logic to better manage room states, learning the importance of thorough state management in real-time apps.')",
+    "**Intention:** To evaluate problem-solving skills, persistence, technical approach, and ability to learn from challenges.",
+    "As a B.Tech CSE student, you've likely had to learn new technologies quickly. Describe a time you had to pick up a new skill or framework for a project. How did you go about it?",
+    "**Answer:** (Disha might say: 'When starting Vidyarya, I initially struggled with integrating a payment gateway. I utilized online documentation, tutorials, and community forums. I broke down the task into smaller parts, experimented with the API, and reached out to peers for advice. This process taught me effective resource utilization and iterative learning.')",
+    "**Intention:** To assess learning agility, resourcefulness, and self-directed learning capabilities.",
+    "Why are you passionate about full-stack development and specifically the MERN stack? What interests you most about this MERN Stack Developer Intern position?",
+    "**Answer:** (Disha should articulate her genuine interest: 'I enjoy full-stack development because it allows me to see a project through from conception to deployment, understanding both front-end user experience and back-end logic. I'm drawn to the MERN stack for its JavaScript-centric nature, which streamlines development. This internship, in particular, offers a chance to apply my academic knowledge and project experience in a real-world setting, contributing to a team and learning best practices.')",
+    "**Intention:** To understand motivation, alignment with the role, and genuine interest in the specific technologies.",
+    "How do you handle constructive feedback on your code or project design? Can you give an example of a time your code was critiqued and how you responded?",
+    "**Answer:** (Disha could say: 'I view constructive feedback as an opportunity for growth. In a team project, a peer once suggested a more efficient way to structure a database query in MediTrack. Initially, I defended my approach, but after understanding their reasoning and looking into performance implications, I agreed to refactor it. The change significantly improved response times, and I learned to be more open to different perspectives.')",
+    "**Intention:** To assess openness to feedback, teamwork, humility, and ability to improve based on input."
+  ],
+  "skill_gaps": [
+    "**Git and GitHub:** While highly probable for a CSE student with projects, it's not explicitly listed in Disha's 'Skills' section, making it an unconfirmed requirement from the job description.",
+    "**REST API Design Principles:** While Disha's MERN stack experience implies familiarity with using/building REST APIs, the job description's 'REST APIs' requirement might imply a deeper understanding of design principles (e.g., HATEOAS, versioning, security) that isn't explicitly confirmed by her listed skills or projects. This is more about depth than a complete gap.",
+    "**'Strong knowledge of JavaScript':** Disha lists JavaScript, but 'strong knowledge' often implies advanced topics like design patterns, performance optimization, and deep understanding of the event loop. This isn't a gap in having the skill but rather a potential gap in the *depth* of knowledge that will be tested during the interview."
+  ],
+  "preparation_plan": [
+    "**Technical Deep Dive:** Review advanced JavaScript concepts (closures, event loop, `this`, `async/await`, prototypes), React Hooks best practices, Node.js event emitter and stream API, Express.js middleware and error handling, and MongoDB indexing and aggregation pipelines.",
+    "**REST API Focus:** Practice designing and implementing RESTful APIs. Understand HTTP methods, status codes, idempotency, and common security considerations (e.g., token-based authentication). Be ready to discuss how APIs were designed and consumed in MediTrack and Vidyarya.",
+    "**Git and GitHub Practice:** Ensure proficiency with common Git commands (branching, merging, rebasing), pull request workflows, and resolving merge conflicts. Be ready to explain how Git/GitHub was used in project development.",
+    "**Project Walkthrough:** Prepare to discuss MediTrack and Vidyarya in detail. Be ready to explain the architecture, tech stack choices, specific features implemented, challenges faced and solutions, and personal contributions. Have the code accessible if asked.",
+    "**Behavioral Question Practice:** Prepare answers for common behavioral questions using the STAR method (Situation, Task, Action, Result). Focus on examples from academic projects, teamwork experiences, and learning challenges.",
+    "**Mock Interview:** Conduct a mock interview to practice articulating technical concepts and behavioral responses under pressure."
+  ],
+  "match_score": 92
+}
+
+
+
+
+
+
