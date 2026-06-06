@@ -1,0 +1,605 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
+
+// ─── TOKENS ───────────────────────────────────────────────────
+$bg-base: #060810;
+$surface: rgba(255, 255, 255, 0.04);
+$surface-hover: rgba(255, 255, 255, 0.08);
+$border: rgba(255, 255, 255, 0.08);
+$border-active: rgba(255, 255, 255, 0.2);
+$text-primary: #f0f2ff;
+$text-muted: rgba(240, 242, 255, 0.45);
+$accent: #00f5a0;
+$accent-dim: rgba(0, 245, 160, 0.12);
+$accent-warn: #f5c400;
+$accent-danger: #f55a00;
+$font-display: 'Syne', sans-serif;
+$font-mono: 'DM Mono', monospace;
+
+// ─── ROOT ─────────────────────────────────────────────────────
+.idb-root {
+  position: relative;
+  min-height: 100vh;
+  background: $bg-base;
+  font-family: $font-display;
+  color: $text-primary;
+  overflow: hidden;
+}
+
+// ─── AMBIENT BACKGROUND ───────────────────────────────────────
+.idb-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+  animation: float 14s ease-in-out infinite;
+
+  &1 {
+    width: 520px; height: 520px;
+    background: radial-gradient(circle, #0d4f8c, transparent 70%);
+    top: -140px; left: -100px;
+    animation-duration: 18s;
+  }
+  &2 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, #003d28, transparent 70%);
+    bottom: -80px; right: 80px;
+    animation-duration: 22s;
+    animation-delay: -6s;
+  }
+  &3 {
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, #2e0a4f, transparent 70%);
+    top: 40%; left: 45%;
+    animation-duration: 16s;
+    animation-delay: -11s;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-30px) scale(1.05); }
+}
+
+.grid-lines {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+// ─── LAYOUT ───────────────────────────────────────────────────
+.idb-layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 220px 1fr 260px;
+  min-height: 100vh;
+  gap: 0;
+}
+
+// ─── LEFT SIDEBAR ─────────────────────────────────────────────
+.idb-sidebar {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid $border;
+  padding: 32px 0;
+  background: rgba(6, 8, 16, 0.6);
+  backdrop-filter: blur(24px);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 24px 32px;
+  border-bottom: 1px solid $border;
+  margin-bottom: 24px;
+
+  .brand-icon {
+    font-size: 22px;
+    filter: drop-shadow(0 0 8px $accent);
+  }
+  .brand-text {
+    font-family: $font-display;
+    font-weight: 800;
+    font-size: 13px;
+    line-height: 1.3;
+    color: $text-primary;
+    letter-spacing: 0.03em;
+  }
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 12px;
+}
+
+.nav-tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: $text-muted;
+  font-family: $font-display;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  overflow: hidden;
+
+  .tab-icon { font-size: 16px; flex-shrink: 0; }
+  .tab-label { flex: 1; }
+
+  &:hover {
+    background: $surface-hover;
+    color: $text-primary;
+  }
+
+  &.active {
+    background: $accent-dim;
+    color: $accent;
+
+    .tab-icon { filter: drop-shadow(0 0 6px $accent); }
+  }
+}
+
+.tab-active-bar {
+  position: absolute;
+  right: 0; top: 20%; bottom: 20%;
+  width: 3px;
+  border-radius: 2px;
+  background: $accent;
+  box-shadow: 0 0 8px $accent;
+}
+
+// ─── CENTER PANEL ─────────────────────────────────────────────
+.idb-main {
+  padding: 40px 40px 60px;
+  overflow-y: auto;
+  max-height: 100vh;
+  scroll-behavior: smooth;
+
+  &.fade-in {
+    animation: fadeIn 0.3s ease forwards;
+  }
+  &.fade-out {
+    animation: fadeOut 0.18s ease forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-8px); }
+}
+
+.panel-title {
+  font-family: $font-display;
+  font-size: 26px;
+  font-weight: 800;
+  color: $text-primary;
+  margin: 0 0 6px;
+  letter-spacing: -0.02em;
+}
+
+.panel-subtitle {
+  font-size: 13px;
+  color: $text-muted;
+  margin: 0 0 32px;
+  font-family: $font-mono;
+}
+
+// ─── ACCORDION ────────────────────────────────────────────────
+.accordion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.accordion-card {
+  border-radius: 12px;
+  border: 1px solid $border;
+  background: $surface;
+  backdrop-filter: blur(12px);
+  overflow: hidden;
+  animation: slideUp 0.4s ease both;
+  animation-delay: calc(var(--i) * 0.04s);
+
+  &.open {
+    border-color: $border-active;
+    background: rgba(255,255,255,0.06);
+  }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.accordion-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px 20px;
+  background: transparent;
+  border: none;
+  color: $text-primary;
+  font-family: $font-display;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s;
+
+  &:hover { background: $surface-hover; }
+}
+
+.q-num {
+  font-family: $font-mono;
+  font-size: 11px;
+  color: $accent;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.q-text { flex: 1; line-height: 1.5; }
+
+.accordion-chevron {
+  font-size: 20px;
+  color: $text-muted;
+  flex-shrink: 0;
+  font-weight: 300;
+  transition: transform 0.3s ease;
+
+  .accordion-card.open & {
+    color: $accent;
+    transform: rotate(0deg);
+  }
+}
+
+.accordion-inner {
+  padding: 0 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.answer-block,
+.intention-block {
+  border-radius: 8px;
+  padding: 14px 16px;
+
+  .block-label {
+    display: block;
+    font-family: $font-mono;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: $text-primary;
+  }
+}
+
+.answer-block {
+  background: rgba(0, 245, 160, 0.06);
+  border: 1px solid rgba(0, 245, 160, 0.15);
+  .block-label { color: $accent; }
+}
+
+.intention-block {
+  background: rgba(245, 196, 0, 0.05);
+  border: 1px solid rgba(245, 196, 0, 0.12);
+  .block-label { color: $accent-warn; }
+}
+
+.no-detail {
+  font-size: 13px;
+  color: $text-muted;
+  font-style: italic;
+  margin: 0;
+  padding: 8px 0;
+}
+
+// ─── SKILL GAPS PANEL ─────────────────────────────────────────
+.skill-gaps-panel {
+  animation: fadeIn 0.3s ease;
+}
+
+.chips-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.glow-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 18px;
+  border-radius: 100px;
+  font-family: $font-display;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid rgba(0, 245, 160, 0.3);
+  color: $accent;
+  background: rgba(0, 245, 160, 0.07);
+  cursor: default;
+  animation: chipIn 0.4s ease both;
+  animation-delay: var(--delay, 0s);
+  transition: all 0.25s ease;
+
+  &:hover {
+    background: rgba(0, 245, 160, 0.15);
+    box-shadow: 0 0 20px rgba(0, 245, 160, 0.25), 0 0 0 1px rgba(0, 245, 160, 0.4);
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes chipIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+// ─── PREPARATION TIMELINE ─────────────────────────────────────
+.prep-timeline-panel { animation: fadeIn 0.3s ease; }
+
+.timeline {
+  position: relative;
+  padding-left: 20px;
+  margin-top: 8px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 20px;
+    bottom: 20px;
+    width: 1px;
+    background: linear-gradient(to bottom, $accent 0%, rgba(0,245,160,0.1) 100%);
+  }
+}
+
+.timeline-item {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 28px;
+  animation: slideUp 0.4s ease both;
+  animation-delay: var(--delay, 0s);
+
+  &:last-child { margin-bottom: 0; }
+}
+
+.tl-dot {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: $bg-base;
+  border: 2px solid $accent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 14px rgba(0, 245, 160, 0.3);
+  position: relative;
+  z-index: 1;
+
+  span {
+    font-family: $font-mono;
+    font-size: 12px;
+    font-weight: 500;
+    color: $accent;
+  }
+}
+
+.tl-content {
+  flex: 1;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 10px;
+  padding: 14px 18px;
+  backdrop-filter: blur(8px);
+  transition: border-color 0.2s;
+
+  &:hover { border-color: rgba(0, 245, 160, 0.2); }
+
+  p {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: $text-primary;
+  }
+}
+
+// ─── RIGHT PANEL ──────────────────────────────────────────────
+.idb-right {
+  border-left: 1px solid $border;
+  padding: 36px 24px;
+  background: rgba(6, 8, 16, 0.5);
+  backdrop-filter: blur(24px);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.right-heading {
+  font-family: $font-display;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $text-muted;
+  margin: 0 0 16px;
+}
+
+.right-score-card {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 24px 20px;
+  text-align: center;
+  backdrop-filter: blur(12px);
+}
+
+.score-ring-wrap {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  margin: 0 auto 12px;
+
+  .score-ring {
+    width: 100%;
+    height: 100%;
+  }
+  .track { stroke: rgba(255,255,255,0.06); }
+}
+
+.score-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.score-num {
+  font-family: $font-display;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.score-pct {
+  font-size: 14px;
+  color: $text-muted;
+  margin-top: 1px;
+}
+
+.score-tag {
+  font-family: $font-mono;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $text-muted;
+  margin-top: 3px;
+}
+
+.score-caption {
+  font-size: 12px;
+  color: $text-muted;
+  line-height: 1.5;
+  margin: 0;
+  font-style: italic;
+}
+
+.right-gaps-card {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 20px;
+  backdrop-filter: blur(12px);
+  flex: 1;
+}
+
+.mini-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mini-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 100px;
+  font-family: $font-display;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid rgba(0, 245, 160, 0.25);
+  color: $accent;
+  background: rgba(0, 245, 160, 0.06);
+  animation: chipIn 0.35s ease both;
+  animation-delay: var(--delay, 0s);
+  transition: all 0.2s;
+
+  &.more-chip {
+    cursor: pointer;
+    border-color: rgba(255,255,255,0.15);
+    color: $text-muted;
+
+    &:hover {
+      border-color: $accent;
+      color: $accent;
+      background: $accent-dim;
+    }
+  }
+}
+
+// ─── RESPONSIVE ───────────────────────────────────────────────
+@media (max-width: 1100px) {
+  .idb-layout {
+    grid-template-columns: 180px 1fr 0;
+  }
+  .idb-right { display: none; }
+}
+
+@media (max-width: 700px) {
+  .idb-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+  .idb-sidebar {
+    height: auto;
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 16px;
+    border-right: none;
+    border-bottom: 1px solid $border;
+    position: static;
+
+    .sidebar-brand { display: none; }
+  }
+  .sidebar-nav {
+    flex-direction: row;
+    padding: 0;
+    gap: 8px;
+  }
+  .nav-tab { flex-direction: column; gap: 4px; padding: 10px 12px; font-size: 11px; }
+  .tab-active-bar { inset: auto; bottom: 0; left: 20%; right: 20%; top: auto; width: auto; height: 3px; }
+  .idb-main { padding: 24px 20px 40px; max-height: none; }
+}
