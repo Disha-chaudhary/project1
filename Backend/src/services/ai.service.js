@@ -113,6 +113,7 @@ Return ONLY valid JSON.
 Use EXACTLY this structure and EXACTLY these camelCase keys:
 
 {
+  "jobTitle": "Frontend Developer",
   "matchScore": 85,
   "technicalQuestions": [
     {
@@ -142,10 +143,12 @@ Use EXACTLY this structure and EXACTLY these camelCase keys:
       "resources": "resources here",
       "task": "task here"
     }
-  ]
+]
 }
 
 Rules:
+
+- Determine the most appropriate job title from the job description and return it in "jobTitle".
 - Do not use snake_case keys.
 - Do not return arrays of strings.
 - technicalQuestions must be array of objects.
@@ -172,6 +175,7 @@ Rules:
   const parsedResponse = JSON.parse(cleanJsonText(response.text));
 
   return {
+    jobTitle: parsedResponse.jobTitle || "Job Title Not Found",
     matchScore:
       parsedResponse.matchScore ||
       parsedResponse.match_score ||

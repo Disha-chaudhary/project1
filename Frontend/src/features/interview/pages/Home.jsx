@@ -1,6 +1,7 @@
-import React, { useState, useRef } from "react";
-import axios from "axios";
+import { useState, useRef } from "react";
 import "../home.scss";
+import { useInterview } from "../hooks/useinterview";
+import { useNavigate } from "react-router-dom";
 
 // ── Floating ambient cards ────────────────────────────────────────────────────
 const FloatingCard = ({ className, icon, label }) => (
@@ -44,14 +45,20 @@ const ReportSection = ({ report, onReset }) => {
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function Home() {
+
+  const {loading,createReport} = useInterview();
+ 
+  const navigate = useNavigate();
   const [jobDescription, setJobDescription]   = useState("");
   const [selfDescription, setSelfDescription] = useState("");
   const [resume, setResume]                   = useState(null);
   const [dragOver, setDragOver]               = useState(false);
-  const [loading, setLoading]                 = useState(false);
+  
   const [error, setError]                     = useState(null);
   const [report, setReport]                   = useState(null);
-  const fileRef = useRef(null);
+  const resumeInputRef = useRef(null);
+
+  
 
   const pickFile = f => { if (f) setResume(f); };
 
@@ -61,26 +68,34 @@ export default function Home() {
     if (f) setResume(f);
   };
 
-  const submit = async () => {
+const submit = async () => {
+  try {
     setError(null);
-    if (!jobDescription.trim()) { setError("Job description is required."); return; }
-    const fd = new FormData();
-    fd.append("jobDescription", jobDescription);
-    fd.append("selfDescription", selfDescription);
-    if (resume) fd.append("resume", resume);
-    setLoading(true);
-    try {
-      const res = await axios.post("http://localhost:3000/api/interview", fd, {
-        withCredentials: true,
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      setReport(res.data);
-    } catch (e) {
-      setError(e?.response?.data?.message || "Request failed. Is your server running?");
-    } finally {
-      setLoading(false);
+
+    if (!jobDescription.trim()) {
+      setError("Job description is required.");
+      return;
     }
-  };
+
+    if (!resume) {
+      setError("Resume PDF is required.");
+      return;
+    }
+
+    const report = await createReport({
+      jobDescription,
+      selfDescription,
+      resumeFile: resume,
+    });
+
+    navigate(`/interview/${report._id}`);
+  } catch (e) {
+    setError(
+      e?.response?.data?.message ||
+      "Failed to generate interview report"
+    );
+  }
+};
 
   if (report) return (
     <div className="page">
@@ -90,6 +105,7 @@ export default function Home() {
   );
 
   return (
+    
     <div className="page">
       <Background />
 
@@ -163,12 +179,12 @@ export default function Home() {
             </label>
             <div
               className={`drop-zone ${dragOver ? "drag-active" : ""} ${resume ? "has-file" : ""}`}
-              onClick={() => fileRef.current.click()}
+             onClick={() => resumeInputRef.current.click()}
               onDrop={handleDrop}
               onDragOver={e => { e.preventDefault(); setDragOver(true); }}
               onDragLeave={() => setDragOver(false)}
             >
-              <input ref={fileRef} type="file" accept=".pdf,.doc,.docx" style={{ display: "none" }}
+              <input ref={resumeInputRef} type="file" accept=".pdf,.doc,.docx" style={{ display: "none" }}
                 onChange={e => pickFile(e.target.files[0])} />
               {resume ? (
                 <div className="drop-zone__preview">

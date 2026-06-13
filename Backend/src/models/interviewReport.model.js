@@ -66,6 +66,12 @@ const interviewReportSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    jobTitle: {
+      type: String,
+      required: true,
+    },
+
+
 
     jobDescription: {
       type: String,

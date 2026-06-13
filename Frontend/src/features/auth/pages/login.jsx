@@ -19,7 +19,7 @@ const Login = () => {
     try {
       await login(email, password);
 
-      navigate("/");
+      navigate("/home");
     } catch (err) {
       console.error(err);
 
