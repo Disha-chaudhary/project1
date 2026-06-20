@@ -1,68 +1,26 @@
 import { useState, useEffect, useRef } from "react";
 import "./InterviewDashboard.scss";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useInterview } from "../hooks/useinterview";
+import { useAuth } from "../../auth/hooks/useAuth";
 
-/* ── ANIMATED SCORE RING ── */
-const AnimatedScore = ({ score }) => {
-  const [displayed, setDisplayed] = useState(0);
-  const radius = 54;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (displayed / 100) * circumference;
-  const color = score >= 75 ? "#00f5a0" : score >= 50 ? "#f5c400" : "#f55a00";
-
-  useEffect(() => {
-    let start = null;
-    const duration = 1400;
-    const step = (ts) => {
-      if (!start) start = ts;
-      const progress = Math.min((ts - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplayed(Math.round(eased * score));
-      if (progress < 1) requestAnimationFrame(step);
-    };
-    const raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-  }, [score]);
-
-  return (
-    <div className="score-ring-wrap">
-      <svg className="score-ring" viewBox="0 0 120 120">
-        <defs>
-          <radialGradient id="glowGrad" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor={color} stopOpacity="0.25" />
-            <stop offset="100%" stopColor={color} stopOpacity="0" />
-          </radialGradient>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="3.5" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-        <circle cx="60" cy="60" r="58" fill="url(#glowGrad)" />
-        <circle className="track" cx="60" cy="60" r={radius} fill="none" strokeWidth="8" />
-        <circle
-          className="progress"
-          cx="60" cy="60" r={radius}
-          fill="none" strokeWidth="8"
-          stroke={color} strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          transform="rotate(-90 60 60)"
-          filter="url(#glow)"
-          style={{ transition: "stroke-dashoffset 0.05s linear" }}
-        />
-      </svg>
-      <div className="score-label">
-        <span className="score-num" style={{ color }}>{displayed}</span>
-        <span className="score-pct">%</span>
-        <span className="score-tag">Match</span>
-      </div>
-    </div>
-  );
-};
+const MocklyLogo = () => (
+  <Link to="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
+    <svg width="36" height="36" viewBox="0 0 80 80" fill="none">
+      <rect x="0" y="0" width="72" height="60" rx="14" fill="#185FA5"/>
+      <polygon points="14,60 6,80 30,60" fill="#185FA5"/>
+      <rect x="10" y="14" width="12" height="4" rx="2" fill="#E6F1FB"/>
+      <rect x="10" y="24" width="22" height="4" rx="2" fill="#E6F1FB"/>
+      <rect x="10" y="34" width="16" height="4" rx="2" fill="#E6F1FB"/>
+      <rect x="10" y="44" width="28" height="4" rx="2" fill="#E6F1FB"/>
+      <circle cx="62" cy="10" r="5" fill="#378ADD"/>
+      <circle cx="62" cy="10" r="2.5" fill="#E6F1FB"/>
+    </svg>
+    <span style={{ fontSize: "22px", fontWeight: 600, color: "#ffffff", letterSpacing: "-0.5px" }}>
+      mock<span style={{ color: "#378ADD" }}>ly</span>
+    </span>
+  </Link>
+);
 
 /* ── ACCORDION CARD ── */
 const AccordionCard = ({ item, index }) => {
@@ -116,15 +74,13 @@ const AccordionCard = ({ item, index }) => {
 
 /* ── SKILL GAPS ── */
 const SkillGaps = ({ gaps }) => {
-  // Step 5: list is directly the gaps array of objects
   const list = gaps || [];
-
   return (
     <div className="skill-gaps-panel">
       <h2 className="panel-title">Skill Gaps</h2>
       <p className="panel-subtitle">Areas to strengthen before your interview</p>
       <div className="chips-grid">
-        {gaps.map((gap, i) => (
+        {list.map((gap, i) => (
           <span key={i} className="glow-chip" style={{ "--delay": `${i * 0.07}s` }}>
             {gap.skill}
           </span>
@@ -136,12 +92,7 @@ const SkillGaps = ({ gaps }) => {
 
 /* ── PREP TIMELINE ── */
 const PrepTimeline = ({ plan }) => {
-  const items = Array.isArray(plan)
-    ? plan
-    : typeof plan === "string"
-    ? plan.split(/\n|\d+\./).map((s) => s.trim()).filter(Boolean)
-    : [];
-
+  const items = Array.isArray(plan) ? plan : [];
   return (
     <div className="prep-timeline-panel">
       <h2 className="panel-title">Preparation Plan</h2>
@@ -154,13 +105,10 @@ const PrepTimeline = ({ plan }) => {
               {i < items.length - 1 && <div className="tl-line" />}
             </div>
             <div className="tl-content">
-              {/* Step 6: render structured object fields */}
-              <>
-                <h4>Day {step.day}</h4>
-                <p><strong>Focus:</strong> {step.focus}</p>
-                <p><strong>Resources:</strong> {step.resources}</p>
-                <p><strong>Task:</strong> {step.task}</p>
-              </>
+              <h4>Day {step.day}</h4>
+              <p><strong>Focus:</strong> {step.focus}</p>
+              <p><strong>Resources:</strong> {step.resources}</p>
+              <p><strong>Task:</strong> {step.task}</p>
             </div>
           </div>
         ))}
@@ -171,51 +119,36 @@ const PrepTimeline = ({ plan }) => {
 
 /* ── TABS CONFIG ── */
 const TABS = [
-  { id: "technical",  label: "Technical Questions",  icon: "⚙️" },
-  { id: "behavioral", label: "Behavioral Questions", icon: "🧠" },
-  { id: "skillgaps",  label: "Skill Gaps",           icon: "📊" },
-  { id: "prep",       label: "Preparation Plan",     icon: "🗺️" },
+  { id: "technical",  label: "Technical",  icon: "⚙️" },
+  { id: "behavioral", label: "Behavioral", icon: "🧠" },
+  { id: "skillgaps",  label: "Skill Gaps", icon: "📊" },
+  { id: "prep",       label: "Prep Plan",  icon: "🗺️" },
 ];
 
 /* ── MAIN EXPORT ── */
 export default function InterviewDashboard() {
   const { interviewId } = useParams();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
-  const {
-    interviewReport,
-    getReportById,
-    loading,
-  } = useInterview();
-
+  const { interviewReport, getReportById, loading } = useInterview();
   const [activeTab, setActiveTab] = useState("technical");
   const [animateIn, setAnimateIn] = useState(true);
 
   useEffect(() => {
-    if (interviewId) {
-      getReportById(interviewId);
-    }
+    if (interviewId) getReportById(interviewId);
   }, [interviewId]);
 
-  if (loading) {
-    return <div className="loading">Loading Report...</div>;
-  }
-
-  if (!interviewReport) {
-    return <div className="loading">Report Not Found</div>;
-  }
-
-  const report = interviewReport;
+  if (loading) return <div className="idb-state">Loading questions...</div>;
+  if (!interviewReport) return <div className="idb-state">Report Not Found</div>;
 
   const {
-    matchScore = 0,
+    jobTitle = "Interview Prep",
     technicalQuestions  = [],
     behavioralQuestions = [],
     skillGaps           = [],
     preparationPlan     = [],
-  } = report;
-
-  // Step 4: skillGaps is an array of objects with .skill
-  const gapList = skillGaps.map((gap) => gap.skill);
+  } = interviewReport;
 
   const handleTab = (id) => {
     if (id === activeTab) return;
@@ -223,23 +156,51 @@ export default function InterviewDashboard() {
     setTimeout(() => { setActiveTab(id); setAnimateIn(true); }, 180);
   };
 
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
+  };
+
+  const totalQuestions = technicalQuestions.length + behavioralQuestions.length;
+
   return (
     <div className="idb-root">
-      {/* Ambient BG */}
       <div className="idb-bg">
-        <div className="orb orb1" />
-        <div className="orb orb2" />
-        <div className="orb orb3" />
+        <div className="orb orb1" /><div className="orb orb2" /><div className="orb orb3" />
         <div className="grid-lines" />
       </div>
+
+      {/* Navbar */}
+      <nav className="idb-nav">
+        <div className="idb-nav__brand">
+          <MocklyLogo />
+        </div>
+        <div className="idb-nav__center">
+          <span className="idb-nav__title">{jobTitle}</span>
+          <span className="idb-nav__badge">📚 Practice Mode</span>
+        </div>
+        <div className="idb-nav__actions">
+          <button
+            className="idb-nav__mock-btn"
+            onClick={() => navigate(`/mock-interview/${interviewId}`)}
+          >
+            <span>🎯</span>
+            <span>Start Mock Interview</span>
+          </button>
+          <button className="idb-nav__logout-btn" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
+      </nav>
 
       <div className="idb-layout">
         {/* SIDEBAR */}
         <aside className="idb-sidebar">
-          <div className="sidebar-brand">
-            <span className="brand-icon">⚡</span>
-            <span className="brand-text">Interview<br />Intel</span>
+          <div className="idb-sidebar__info">
+            <p className="idb-sidebar__qs">{totalQuestions} Questions</p>
+            <p className="idb-sidebar__hint">Study the questions and suggested answers before taking the mock interview.</p>
           </div>
+
           <nav className="sidebar-nav">
             {TABS.map((tab) => (
               <button
@@ -253,6 +214,16 @@ export default function InterviewDashboard() {
               </button>
             ))}
           </nav>
+
+          <div className="idb-sidebar__cta">
+            <p>Ready to test yourself?</p>
+            <button
+              className="idb-sidebar__mock-btn"
+              onClick={() => navigate(`/mock-interview/${interviewId}`)}
+            >
+              🎯 Start Mock Interview
+            </button>
+          </div>
         </aside>
 
         {/* MAIN */}
@@ -261,7 +232,7 @@ export default function InterviewDashboard() {
             <div className="questions-panel">
               <h2 className="panel-title">Technical Questions</h2>
               <p className="panel-subtitle">
-                {technicalQuestions.length} questions · Click any card to reveal answer
+                {technicalQuestions.length} questions · Click any card to reveal answer & intent
               </p>
               <div className="accordion-list">
                 {technicalQuestions.map((q, i) => (
@@ -274,7 +245,7 @@ export default function InterviewDashboard() {
             <div className="questions-panel">
               <h2 className="panel-title">Behavioral Questions</h2>
               <p className="panel-subtitle">
-                {behavioralQuestions.length} questions · Click any card to reveal answer
+                {behavioralQuestions.length} questions · Click any card to reveal answer & intent
               </p>
               <div className="accordion-list">
                 {behavioralQuestions.map((q, i) => (
@@ -286,42 +257,6 @@ export default function InterviewDashboard() {
           {activeTab === "skillgaps" && <SkillGaps gaps={skillGaps} />}
           {activeTab === "prep"      && <PrepTimeline plan={preparationPlan} />}
         </main>
-
-        {/* RIGHT PANEL */}
-        <aside className="idb-right">
-          <div className="right-score-card">
-            <h3 className="right-heading">Match Score</h3>
-            <AnimatedScore score={matchScore} />
-            <p className="score-caption">
-              {matchScore >= 75
-                ? "Strong fit — you're well positioned!"
-                : matchScore >= 50
-                ? "Good potential — close the gaps!"
-                : "Room to grow — focus on prep!"}
-            </p>
-          </div>
-
-          <div className="right-gaps-card">
-            <h3 className="right-heading">Key Gaps</h3>
-            <div className="mini-chips">
-              {/* Step 7: renamed gap -> skill for clarity */}
-              {gapList.slice(0, 6).map((skill, i) => (
-                <span key={i} className="mini-chip" style={{ "--delay": `${i * 0.06}s` }}>
-                  {skill}
-                </span>
-              ))}
-              {gapList.length > 6 && (
-                <span
-                  className="mini-chip more-chip"
-                  onClick={() => handleTab("skillgaps")}
-                  title="View all"
-                >
-                  +{gapList.length - 6} more →
-                </span>
-              )}
-            </div>
-          </div>
-        </aside>
       </div>
     </div>
   );

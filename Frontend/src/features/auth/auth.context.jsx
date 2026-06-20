@@ -1,29 +1,34 @@
-import {createContext,useState,useEffect} from "react";
-import {getMe} from "./services/auth.api.js";
-export const AuthContext = createContext()
+import { createContext, useState, useEffect } from "react";
+import { getMe } from "./services/auth.api.js";
 
-export const AuthProvider  = ({children})=>{
-const [user,setUser] = useState(null)
-const [loading,setLoading] = useState(true)
+export const AuthContext = createContext();
 
-useEffect(()=>{
-    const getAndSetUser = async()=>{
-        try{
-            const userData = await getMe();
-            setUser(userData.user);
-        } catch (error) {
-            console.error("Error fetching user data:", error);
-        } finally {
-            setLoading(false);
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const getAndSetUser = async () => {
+      try {
+        const userData = await getMe();
+        setUser(userData.user);
+      } catch (error) {
+        if (error.response?.status === 401) {
+          setUser(null); // not logged in, silently ignore
+        } else {
+          console.error("Error fetching user data:", error);
         }
+      } finally {
+        setLoading(false);
+      }
     };
 
     getAndSetUser();
-}, []);
+  }, []);
 
-return (
-    <AuthContext.Provider value = {{user, setUser, loading, setLoading}}>
-        {children}
+  return (
+    <AuthContext.Provider value={{ user, setUser, loading, setLoading }}>
+      {children}
     </AuthContext.Provider>
-)
-}
+  );
+};

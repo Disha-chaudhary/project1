@@ -1,9 +1,27 @@
 import { useState, useRef } from "react";
 import "../home.scss";
 import { useInterview } from "../hooks/useinterview";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../../auth/hooks/useAuth";
 
-// ── Floating ambient cards ────────────────────────────────────────────────────
+const MocklyLogo = () => (
+  <Link to="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
+    <svg width="36" height="36" viewBox="0 0 80 80" fill="none">
+      <rect x="0" y="0" width="72" height="60" rx="14" fill="#185FA5"/>
+      <polygon points="14,60 6,80 30,60" fill="#185FA5"/>
+      <rect x="10" y="14" width="12" height="4" rx="2" fill="#E6F1FB"/>
+      <rect x="10" y="24" width="22" height="4" rx="2" fill="#E6F1FB"/>
+      <rect x="10" y="34" width="16" height="4" rx="2" fill="#E6F1FB"/>
+      <rect x="10" y="44" width="28" height="4" rx="2" fill="#E6F1FB"/>
+      <circle cx="62" cy="10" r="5" fill="#378ADD"/>
+      <circle cx="62" cy="10" r="2.5" fill="#E6F1FB"/>
+    </svg>
+    <span style={{ fontSize: "22px", fontWeight: 600, color: "#ffffff", letterSpacing: "-0.5px" }}>
+      mock<span style={{ color: "#378ADD" }}>ly</span>
+    </span>
+  </Link>
+);
+
 const FloatingCard = ({ className, icon, label }) => (
   <div className={`float-card ${className}`}>
     <span className="float-card__icon">{icon}</span>
@@ -11,141 +29,82 @@ const FloatingCard = ({ className, icon, label }) => (
   </div>
 );
 
-// ── Report result section ─────────────────────────────────────────────────────
-const ReportSection = ({ report, onReset }) => {
-  const sections = typeof report === "string"
-    ? [{ title: "Interview Report", content: report }]
-    : Object.entries(report).map(([k, v]) => ({
-        title: k.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()),
-        content: typeof v === "object" ? JSON.stringify(v, null, 2) : String(v),
-      }));
-
-  return (
-    <div className="report-wrap">
-      <div className="report-topbar">
-        <div className="report-topbar__left">
-          <span className="report-topbar__dot" />
-          <span className="report-topbar__dot" />
-          <span className="report-topbar__dot" />
-          <span className="report-topbar__title">Interview Report Generated</span>
-        </div>
-        <button className="report-reset" onClick={onReset}>↩ New Report</button>
-      </div>
-      <div className="report-grid">
-        {sections.map((s, i) => (
-          <div className="report-card" key={i} style={{ animationDelay: `${i * 0.07}s` }}>
-            <div className="report-card__header">{s.title}</div>
-            <pre className="report-card__body">{s.content}</pre>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// ── Main component ────────────────────────────────────────────────────────────
 export default function Home() {
-
-  const {loading,createReport} = useInterview();
- 
+  const { loading, createReport } = useInterview();
+  const { logout } = useAuth();
   const navigate = useNavigate();
-  const [jobDescription, setJobDescription]   = useState("");
+
+  const [jobDescription, setJobDescription] = useState("");
   const [selfDescription, setSelfDescription] = useState("");
-  const [resume, setResume]                   = useState(null);
-  const [dragOver, setDragOver]               = useState(false);
-  
-  const [error, setError]                     = useState(null);
-  const [report, setReport]                   = useState(null);
+  const [resume, setResume] = useState(null);
+  const [dragOver, setDragOver] = useState(false);
+  const [error, setError] = useState(null);
   const resumeInputRef = useRef(null);
 
-  
+  const pickFile = (f) => { if (f) setResume(f); };
 
-  const pickFile = f => { if (f) setResume(f); };
-
-  const handleDrop = e => {
-    e.preventDefault(); setDragOver(false);
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
     const f = e.dataTransfer.files[0];
     if (f) setResume(f);
   };
 
-const submit = async () => {
-  try {
-    setError(null);
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
+  };
 
-    if (!jobDescription.trim()) {
-      setError("Job description is required.");
-      return;
+  const submit = async () => {
+    try {
+      setError(null);
+      if (!jobDescription.trim()) {
+        setError("Job description is required.");
+        return;
+      }
+      if (!resume) {
+        setError("Resume PDF is required.");
+        return;
+      }
+      const report = await createReport({
+        jobDescription,
+        selfDescription,
+        resumeFile: resume,
+      });
+      navigate(`/mock-interview/${report._id}`);
+    } catch (e) {
+      setError(e?.response?.data?.message || "Failed to generate interview report");
     }
-
-    if (!resume) {
-      setError("Resume PDF is required.");
-      return;
-    }
-
-    const report = await createReport({
-      jobDescription,
-      selfDescription,
-      resumeFile: resume,
-    });
-
-    navigate(`/interview/${report._id}`);
-  } catch (e) {
-    setError(
-      e?.response?.data?.message ||
-      "Failed to generate interview report"
-    );
-  }
-};
-
-  if (report) return (
-    <div className="page">
-      <Background />
-      <ReportSection report={report} onReset={() => { setReport(null); setError(null); }} />
-    </div>
-  );
+  };
 
   return (
-    
     <div className="page">
       <Background />
 
-      {/* Ambient floating elements */}
       <FloatingCard className="fc-tl" icon="🤖" label="AI Analysis" />
       <FloatingCard className="fc-tr" icon="📊" label="Score Card" />
       <FloatingCard className="fc-bl" icon="💬" label="Mock Interview" />
       <FloatingCard className="fc-br" icon="📄" label="Resume" />
 
-      {/* ── Compact header ── */}
       <header className="topbar">
         <div className="topbar__brand">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <polygon points="11,2 20,7 20,15 11,20 2,15 2,7" stroke="url(#g1)" strokeWidth="1.5" fill="none"/>
-            <polygon points="11,6 16,9 16,13 11,16 6,13 6,9" fill="url(#g1)" opacity=".35"/>
-            <defs>
-              <linearGradient id="g1" x1="0" y1="0" x2="22" y2="22">
-                <stop offset="0%" stopColor="#38bdf8"/>
-                <stop offset="100%" stopColor="#818cf8"/>
-              </linearGradient>
-            </defs>
-          </svg>
-          <span>InterviewAI</span>
+          <MocklyLogo />
         </div>
         <div className="topbar__pill">
           <span className="topbar__dot--live" />
           AI-powered prep
         </div>
+        <button onClick={handleLogout} className="topbar__logout">
+          Logout
+        </button>
       </header>
 
-      {/* ── Page title – compact ── */}
       <div className="page-heading">
         <h1>Generate Your <em>Interview Report</em></h1>
         <p>Paste a job description, upload your resume, and get a tailored prep report in seconds.</p>
       </div>
 
-      {/* ── Two-column form ── */}
       <div className="form-shell">
-
-        {/* LEFT – Job Description */}
         <section className="panel panel--left">
           <label className="panel__label">
             <span className="panel__label-icon">📋</span>
@@ -156,7 +115,7 @@ const submit = async () => {
             className="jd-textarea"
             placeholder="Paste the full job posting here — role overview, responsibilities, required skills…"
             value={jobDescription}
-            onChange={e => setJobDescription(e.target.value)}
+            onChange={(e) => setJobDescription(e.target.value)}
             spellCheck={false}
           />
           <div className="panel__footer">
@@ -167,10 +126,7 @@ const submit = async () => {
           </div>
         </section>
 
-        {/* RIGHT – Resume + Self desc + CTA */}
         <section className="panel panel--right">
-
-          {/* Resume upload */}
           <div className="right-block">
             <label className="panel__label">
               <span className="panel__label-icon">📎</span>
@@ -179,13 +135,18 @@ const submit = async () => {
             </label>
             <div
               className={`drop-zone ${dragOver ? "drag-active" : ""} ${resume ? "has-file" : ""}`}
-             onClick={() => resumeInputRef.current.click()}
+              onClick={() => resumeInputRef.current.click()}
               onDrop={handleDrop}
-              onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
               onDragLeave={() => setDragOver(false)}
             >
-              <input ref={resumeInputRef} type="file" accept=".pdf,.doc,.docx" style={{ display: "none" }}
-                onChange={e => pickFile(e.target.files[0])} />
+              <input
+                ref={resumeInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx"
+                style={{ display: "none" }}
+                onChange={(e) => pickFile(e.target.files[0])}
+              />
               {resume ? (
                 <div className="drop-zone__preview">
                   <span className="drop-zone__preview-icon">✅</span>
@@ -193,7 +154,10 @@ const submit = async () => {
                     <span className="drop-zone__preview-name">{resume.name}</span>
                     <span className="drop-zone__preview-size">{(resume.size / 1024).toFixed(1)} KB</span>
                   </div>
-                  <button className="drop-zone__remove" onClick={e => { e.stopPropagation(); setResume(null); }}>✕</button>
+                  <button
+                    className="drop-zone__remove"
+                    onClick={(e) => { e.stopPropagation(); setResume(null); }}
+                  >✕</button>
                 </div>
               ) : (
                 <div className="drop-zone__idle">
@@ -205,7 +169,6 @@ const submit = async () => {
             </div>
           </div>
 
-          {/* Self description */}
           <div className="right-block">
             <label className="panel__label">
               <span className="panel__label-icon">✍️</span>
@@ -216,35 +179,26 @@ const submit = async () => {
               className="self-textarea"
               placeholder="A few lines about your background, experience level, and what you're looking for…"
               value={selfDescription}
-              onChange={e => setSelfDescription(e.target.value)}
+              onChange={(e) => setSelfDescription(e.target.value)}
               spellCheck={false}
             />
           </div>
 
-          {/* Error */}
           {error && (
             <div className="error-banner">
               <span>⚠</span> {error}
             </div>
           )}
 
-          {/* Generate button */}
           <button
             className={`generate-btn ${loading ? "is-loading" : ""}`}
             onClick={submit}
             disabled={loading}
           >
             {loading ? (
-              <>
-                <span className="generate-btn__spinner" />
-                <span>Analysing…</span>
-              </>
+              <><span className="generate-btn__spinner" /><span>Analysing…</span></>
             ) : (
-              <>
-                <span className="generate-btn__glow" />
-                <span className="generate-btn__icon">⚡</span>
-                <span>Generate Interview Report</span>
-              </>
+              <><span className="generate-btn__glow" /><span className="generate-btn__icon">⚡</span><span>Generate & Start Mock Interview</span></>
             )}
           </button>
 
@@ -255,7 +209,6 @@ const submit = async () => {
   );
 }
 
-// ── Background layer (extracted to avoid re-renders) ─────────────────────────
 function Background() {
   return (
     <div className="bg" aria-hidden="true">

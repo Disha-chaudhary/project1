@@ -20,15 +20,22 @@ interviewRouter.post(
 );
 
 interviewRouter.get(
-  "/:interviewId",
-  authMiddleware.authUser,
-  interviewController.getInterviewReportByIdController
-);
-interviewRouter.get(
   "/",
   authMiddleware.authUser,
   interviewController.getAllInterviewReportsController
 );
 
+interviewRouter.get(
+  "/:interviewId",
+  authMiddleware.authUser,
+  interviewController.getInterviewReportByIdController
+);
+
+// ✅ New: Mock interview evaluation route
+interviewRouter.post(
+  "/:interviewId/evaluate",
+  authMiddleware.authUser,
+  interviewController.evaluateMockInterviewController
+);
 
 module.exports = interviewRouter;
