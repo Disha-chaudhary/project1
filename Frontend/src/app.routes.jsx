@@ -1,9 +1,9 @@
 import { createBrowserRouter } from "react-router-dom";
 import Login from "./features/auth/pages/login";
 import Register from "./features/auth/pages/register";
-import Protected from "./features/auth/components/Protected";
+import Protected from "./features/auth/components/protected";
 import Home from "./features/interview/pages/Home";
-import InterviewDashboard from "./features/interview/pages/InterviewDashboard";
+import InterviewDashboard from "./features/interview/pages/interviewDashboard";
 import Landing from "./features/auth/pages/landing";
 import MockInterview from "./features/interview/pages/MockInterview";
 import MockResult from "./features/interview/pages/MockResult";
