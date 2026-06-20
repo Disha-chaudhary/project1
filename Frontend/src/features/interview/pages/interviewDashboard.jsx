@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import "./InterviewDashboard.scss";
+import "./interviewDashboard.scss";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useInterview } from "../hooks/useinterview";
 import { useAuth } from "../../auth/hooks/useAuth";
