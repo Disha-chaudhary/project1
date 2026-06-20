@@ -86,10 +86,15 @@ async function loginUser(req, res) {
 
     console.log("Creating cookie...");
 
+    // res.cookie("token", token, {
+    //   httpOnly: true,
+    //   sameSite: "lax",
+    // });
     res.cookie("token", token, {
-      httpOnly: true,
-      sameSite: "lax",
-    });
+  httpOnly: true,
+  sameSite: "none",
+  secure: true,
+});
 
     console.log("Sending response...");
 
