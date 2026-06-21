@@ -1,9 +1,7 @@
-const { GoogleGenAI } = require("@google/genai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 require("dotenv").config();
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GOOGLE_GENAI_API_KEY,
-});
+const ai = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY);
 
 function cleanJsonText(text) {
   return text
@@ -71,11 +69,9 @@ function toPreparationPlanObjects(arr = []) {
 }
 
 async function invokeGeminiAi() {
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: "Hello Gemini! Explain what is an interview?",
-  });
-  console.log(response.text);
+  const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const response = await model.generateContent("Hello Gemini! Explain what is an interview?");
+  console.log(response.response.text());
 }
 
 async function generateInterviewReport({ resume, selfDescription, jobDescription }) {
@@ -140,18 +136,16 @@ Rules:
 - severity must be only "Low", "Medium", or "High".
 - Give 5 technical questions.
 - Give 5 behavioral questions.
-- Give 3 skill gaps.
+- Give 5 skill gaps.
 - Give 7 days preparation plan.
 `;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: prompt,
-    config: { responseMimeType: "application/json" },
-  });
+  const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const response = await model.generateContent(prompt);
+  const responseText = response.response.text();
 
-  console.log("Gemini raw response:", response.text);
-  const parsedResponse = JSON.parse(cleanJsonText(response.text));
+  console.log("Gemini raw response:", responseText);
+  const parsedResponse = JSON.parse(cleanJsonText(responseText));
 
   return {
     jobTitle: parsedResponse.jobTitle || "Job Title Not Found",
@@ -163,7 +157,6 @@ Rules:
   };
 }
 
-// ✅ Updated: now returns matchScore, skillGaps, preparationPlan based on answers
 async function evaluateMockInterview({ technicalQuestions, behavioralQuestions, jobDescription }) {
   const allQuestions = [
     ...technicalQuestions.map((q) => ({ ...q, type: "technical" })),
@@ -224,13 +217,10 @@ Rules:
 - Be honest but constructive
 `;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: prompt,
-    config: { responseMimeType: "application/json" },
-  });
-
-  const parsed = JSON.parse(cleanJsonText(response.text));
+  const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const response = await model.generateContent(prompt);
+  const responseText = response.response.text();
+  const parsed = JSON.parse(cleanJsonText(responseText));
 
   return {
     matchScore: parsed.matchScore || 0,
