@@ -1,7 +1,7 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { GoogleGenAI } = require("@google/genai");
 require("dotenv").config();
 
-const ai = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY);
+const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GENAI_API_KEY });
 
 function cleanJsonText(text) {
   return text
@@ -69,9 +69,11 @@ function toPreparationPlanObjects(arr = []) {
 }
 
 async function invokeGeminiAi() {
-  const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
-  const response = await model.generateContent("Hello Gemini! Explain what is an interview?");
-  console.log(response.response.text());
+  const response = await ai.models.generateContent({
+    model: "gemini-2.0-flash",
+    contents: "Hello Gemini! Explain what is an interview?",
+  });
+  console.log(response.text);
 }
 
 async function generateInterviewReport({ resume, selfDescription, jobDescription }) {
@@ -136,13 +138,15 @@ Rules:
 - severity must be only "Low", "Medium", or "High".
 - Give 5 technical questions.
 - Give 5 behavioral questions.
-- Give 5 skill gaps.
+- Give 3 skill gaps.
 - Give 7 days preparation plan.
 `;
 
-  const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
-  const response = await model.generateContent(prompt);
-  const responseText = response.response.text();
+  const response = await ai.models.generateContent({
+    model: "gemini-2.0-flash",
+    contents: prompt,
+  });
+  const responseText = response.text;
 
   console.log("Gemini raw response:", responseText);
   const parsedResponse = JSON.parse(cleanJsonText(responseText));
@@ -217,9 +221,11 @@ Rules:
 - Be honest but constructive
 `;
 
-  const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
-  const response = await model.generateContent(prompt);
-  const responseText = response.response.text();
+  const response = await ai.models.generateContent({
+    model: "gemini-2.0-flash",
+    contents: prompt,
+  });
+  const responseText = response.text;
   const parsed = JSON.parse(cleanJsonText(responseText));
 
   return {
