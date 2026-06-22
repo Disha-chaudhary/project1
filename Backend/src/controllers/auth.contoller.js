@@ -32,12 +32,12 @@ async function registerUser(req, res) {
         { expiresIn: '1d' }
     );
 
-    res.cookie("token", token, {
+   res.cookie("token", token, {
   httpOnly: true,
   sameSite: "none",
   secure: true,
+  maxAge: 24 * 60 * 60 * 1000
 });
-
     res.status(201).json({
         message: 'User registered successfully',
         user: {
@@ -90,14 +90,11 @@ async function loginUser(req, res) {
 
     console.log("Creating cookie...");
 
-    // res.cookie("token", token, {
-    //   httpOnly: true,
-    //   sameSite: "lax",
-    // });
     res.cookie("token", token, {
   httpOnly: true,
   sameSite: "none",
   secure: true,
+  maxAge: 24 * 60 * 60 * 1000
 });
 
     console.log("Sending response...");

@@ -36,7 +36,7 @@ function Register() {
     setIsSubmitting(true);
     try {
       await register(name, email, password);
-      navigate("/home");
+      navigate("/login");
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed. Please try again.");
     } finally {
