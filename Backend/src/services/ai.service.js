@@ -69,7 +69,7 @@ function toPreparationPlanObjects(arr = []) {
 }
 
 async function invokeGeminiAi() {
-  const model = ai.getGenerativeModel({ model: "gemini-pro" });
+  const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
   const response = await model.generateContent("Hello Gemini! Explain what is an interview?");
   console.log(response.response.text());
 }
@@ -140,7 +140,7 @@ Rules:
 - Give 7 days preparation plan.
 `;
 
-  const model = ai.getGenerativeModel({ model: "gemini-pro" });
+  const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
   const response = await model.generateContent(prompt);
   const responseText = response.response.text();
 
@@ -217,7 +217,7 @@ Rules:
 - Be honest but constructive
 `;
 
-  const model = ai.getGenerativeModel({ model: "gemini-pro" });
+  const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
   const response = await model.generateContent(prompt);
   const responseText = response.response.text();
   const parsed = JSON.parse(cleanJsonText(responseText));
