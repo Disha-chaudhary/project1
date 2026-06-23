@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useInterview } from "../hooks/useinterview";
 import { evaluateMockInterviewApi } from "../../auth/services/interview.api.js";
@@ -32,10 +32,31 @@ export default function MockInterview() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [activeSection, setActiveSection] = useState("technical");
+  const [timeLeft, setTimeLeft] = useState(30 * 60);
+  const [timerExpired, setTimerExpired] = useState(false);
+  const submitRef = useRef(null);
 
   useEffect(() => {
     if (interviewId) getReportById(interviewId);
   }, [interviewId]);
+
+  useEffect(() => {
+    if (timeLeft <= 0) {
+      setTimerExpired(true);
+      if (submitRef.current) submitRef.current();
+      return;
+    }
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timeLeft]);
+
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, "0");
+    const s = (seconds % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  };
 
   if (loading) return <div className="mi-loading"><div className="mi-spinner" />Loading questions...</div>;
   if (!interviewReport) return <div className="mi-loading">Report not found</div>;
@@ -46,13 +67,14 @@ export default function MockInterview() {
   const answeredCount = Object.values(techAnswers).filter(a => a?.trim()).length +
     Object.values(behavAnswers).filter(a => a?.trim()).length;
 
-  const handleSubmit = async () => {
-    const unansweredTech = technicalQuestions.filter((_, i) => !techAnswers[i]?.trim());
-    const unansweredBehav = behavioralQuestions.filter((_, i) => !behavAnswers[i]?.trim());
-
-    if (unansweredTech.length > 0 || unansweredBehav.length > 0) {
-      setError(`Please answer all ${totalQuestions} questions before submitting.`);
-      return;
+  const handleSubmit = async (autoSubmit = false) => {
+    if (!autoSubmit) {
+      const unansweredTech = technicalQuestions.filter((_, i) => !techAnswers[i]?.trim());
+      const unansweredBehav = behavioralQuestions.filter((_, i) => !behavAnswers[i]?.trim());
+      if (unansweredTech.length > 0 || unansweredBehav.length > 0) {
+        setError(`Please answer all ${totalQuestions} questions before submitting.`);
+        return;
+      }
     }
 
     setError(null);
@@ -62,11 +84,11 @@ export default function MockInterview() {
       const payload = {
         technicalQuestions: technicalQuestions.map((q, i) => ({
           question: q.question,
-          answer: techAnswers[i],
+          answer: techAnswers[i] || "No answer provided",
         })),
         behavioralQuestions: behavioralQuestions.map((q, i) => ({
           question: q.question,
-          answer: behavAnswers[i],
+          answer: behavAnswers[i] || "No answer provided",
         })),
       };
 
@@ -80,9 +102,55 @@ export default function MockInterview() {
     }
   };
 
+  submitRef.current = () => handleSubmit(true);
+
+  const timerColor = timeLeft <= 300 ? "#ef4444" : timeLeft <= 600 ? "#f97316" : "#185FA5";
+
   return (
     <div className="mi-root">
       <Background />
+
+      {/* countdown timer */}
+      <div style={{
+        position: "fixed",
+        top: "16px",
+        right: "24px",
+        background: timerColor,
+        color: "white",
+        padding: "10px 20px",
+        borderRadius: "10px",
+        fontWeight: "bold",
+        fontSize: "22px",
+        zIndex: 1000,
+        boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        transition: "background 0.3s"
+      }}>
+        ⏱ {formatTime(timeLeft)}
+        {timeLeft <= 300 && <span style={{fontSize:"14px"}}>⚠ Hurry up!</span>}
+      </div>
+
+      {/* Timer expired overlay */}
+      {timerExpired && (
+        <div style={{
+          position: "fixed",
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(0,0,0,0.8)",
+          zIndex: 2000,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          color: "white",
+          fontSize: "24px",
+          fontWeight: "bold"
+        }}>
+          <div>⏰ Time's up! Submitting your answers...</div>
+          <div style={{fontSize:"16px", marginTop:"12px", opacity:0.7}}>Please wait...</div>
+        </div>
+      )}
 
       {/* Navbar */}
       <nav className="mi-nav">
@@ -174,7 +242,7 @@ export default function MockInterview() {
 
         <button
           className={`mi-submit-btn ${submitting ? "is-loading" : ""}`}
-          onClick={handleSubmit}
+          onClick={() => handleSubmit(false)}
           disabled={submitting}
         >
           {submitting ? (
