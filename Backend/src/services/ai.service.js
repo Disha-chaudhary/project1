@@ -70,7 +70,7 @@ function toPreparationPlanObjects(arr = []) {
 
 async function invokeGeminiAi() {
   const response = await ai.models.generateContent({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash-lite",
     contents: "Hello Gemini! Explain what is an interview?",
   });
   console.log(response.text);
@@ -143,7 +143,7 @@ Rules:
 `;
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash-lite",
     contents: prompt,
   });
   const responseText = response.text;
@@ -222,7 +222,7 @@ Rules:
 `;
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash-lite",
     contents: prompt,
   });
   const responseText = response.text;
